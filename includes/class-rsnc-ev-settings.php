@@ -141,6 +141,16 @@ class RSNC_EV_Settings {
 				<?php wp_nonce_field( 'rsnc_ev_clear_cache' ); ?>
 				<?php submit_button( __( 'Clear cache', 'rsnc-events' ), 'secondary', 'submit', false ); ?>
 			</form>
+
+			<h2><?php esc_html_e( 'Version', 'rsnc-events' ); ?></h2>
+			<p>
+				<?php
+				/* translators: %s: version number */
+				echo esc_html( sprintf( __( 'Installed: %s.', 'rsnc-events' ), RSNC_EV_VERSION ) ) . ' ';
+				esc_html_e( 'New versions are published on GitHub and show on the Plugins page as "Update available".', 'rsnc-events' );
+				?>
+				<a href="<?php echo esc_url( admin_url( 'update-core.php?force-check=1' ) ); ?>"><?php esc_html_e( 'Check for updates now', 'rsnc-events' ); ?></a>
+			</p>
 		</div>
 		<?php
 	}

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       RSNC Events
  * Description:       Shows RSNC's show calendar and published results on rsnc.us, read from the RSNC admin's events feed. Shortcodes: [rsnc_calendar] and [rsnc_results].
- * Version:           1.2.0
+ * Version:           1.2.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Equine Network
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'RSNC_EV_VERSION', '1.2.0' );
+define( 'RSNC_EV_VERSION', '1.2.1' );
 define( 'RSNC_EV_FILE', __FILE__ );
 define( 'RSNC_EV_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RSNC_EV_URL', plugin_dir_url( __FILE__ ) );
