@@ -552,7 +552,8 @@ class RSNC_EV_Render {
 				echo '<td class="rsnc-ev-c-num" data-label="' . esc_attr__( 'Time', 'rsnc-events' ) . '">' . esc_html( (string) ( $r['totalTime'] ?? '' ) ) . '</td>';
 				echo '<td class="rsnc-ev-c-num" data-label="' . esc_attr__( 'Cattle', 'rsnc-events' ) . '">' . esc_html( (string) ( $r['totalCattle'] ?? '' ) ) . '</td>';
 			}
-			echo '<td class="rsnc-ev-c-money">' . esc_html( self::money( $r['amountWon'] ?? 0 ) ) . '</td>';
+			$won = (float) ( $r['amountWon'] ?? 0 ) > 0;
+			echo '<td class="rsnc-ev-c-money' . ( $won ? '' : ' rsnc-ev-none' ) . '">' . esc_html( self::money( $r['amountWon'] ?? 0 ) ) . '</td>';
 			if ( ! $rr ) {
 				$pts = isset( $r['points'] ) ? (float) $r['points'] : 0;
 				echo '<td class="rsnc-ev-c-num" data-label="' . esc_attr__( 'Points', 'rsnc-events' ) . '">' . esc_html( $pts > 0 ? rtrim( rtrim( number_format( $pts, 2, '.', '' ), '0' ), '.' ) : '—' ) . '</td>';

@@ -146,6 +146,29 @@
 .rsnc-ev .rsnc-ev-table td.rsnc-ev-c-num::before { content: attr(data-label) " "; font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
 .rsnc-ev .rsnc-ev-table th { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--rsnc-ev-muted); }
 
+/* Phones: results use the full width (the date is in the red line), compact placings */
+@media (max-width: 639px) {
+	.rsnc-ev-result-card { grid-template-columns: minmax(0, 1fr); padding: 18px 0; }
+	.rsnc-ev-result-card .rsnc-ev-dateblock { display: none; }
+	.rsnc-ev-day-static, .rsnc-ev-day > summary { min-height: 44px; padding: 6px 10px; }
+	.rsnc-ev-view { padding: 7px 12px; font-size: 13px; }
+	.rsnc-ev-day-body { padding: 0 10px 8px; }
+	.rsnc-ev-class { margin-top: 12px; }
+	.rsnc-ev .rsnc-ev-class-name { font-size: 15px; }
+	.rsnc-ev .rsnc-ev-table { font-size: 14px; }
+	.rsnc-ev .rsnc-ev-table tr { grid-template-columns: 24px auto auto auto 1fr; column-gap: 10px; row-gap: 1px; padding: 6px 0; }
+	.rsnc-ev .rsnc-ev-c-place { font-size: 15px; grid-row: 1; }
+	.rsnc-ev .rsnc-ev-table td.rsnc-ev-c-num { font-size: 12.5px; }
+	.rsnc-ev .rsnc-ev-table td.rsnc-ev-c-num::before { font-size: 11px; }
+	.rsnc-ev .rsnc-ev-table td.rsnc-ev-none { visibility: hidden; }
+}
+/* Phones: Time, Cattle, Points side by side under the name (not under the place number) */
+@media (max-width: 639px) {
+	.rsnc-ev .rsnc-ev-table:not(.rsnc-ev-table-rr) td:nth-child(3) { grid-column: 2; }
+	.rsnc-ev .rsnc-ev-table:not(.rsnc-ev-table-rr) td:nth-child(4) { grid-column: 3; }
+	.rsnc-ev .rsnc-ev-table:not(.rsnc-ev-table-rr) td:nth-child(6) { grid-column: 4; }
+}
+
 /* Pages */
 .rsnc-ev-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 26px 0 0; }
 .rsnc-ev a.rsnc-ev-page, .rsnc-ev-page {

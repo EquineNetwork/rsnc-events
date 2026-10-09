@@ -46,6 +46,7 @@ Once it looks right on staging, repeat on the live site.
 
 = 1.1.0 =
 * Calendar and results: search, month, state, producer and venue filters; results also pick a season (this season and the four before). 10 events per page with page numbers (shortcode option per_page).
+* Phones: results use the full width with compact placings (time, cattle and points on one short line).
 * Looks like the site's own event list: the theme's fonts, a date block, plain month labels, red "Find Events" button.
 * "Book Stalls & RV" button removed for now: the feed no longer carries a booking link (Global Stall Manager will supply booking status).
 
