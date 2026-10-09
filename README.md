@@ -13,7 +13,9 @@ Shows RSNC's calendar and published results on rsnc.us from the RSNC admin's eve
 ./build.sh   # → dist/rsnc-events.zip
 ```
 
-Releases on GitHub carry the zip for upload to WordPress.
+Releases on GitHub carry the zip. Installed sites update themselves from the latest release
+(`includes/class-rsnc-ev-updater.php`): to ship a change, bump the version in `rsnc-events.php`,
+build, and publish a release tagged `vX.Y.Z` with `dist/rsnc-events.zip` attached.
 
 ## Layout
 

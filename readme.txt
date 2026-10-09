@@ -4,7 +4,7 @@ Tags: events, calendar, results
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: Proprietary
 
 RSNC's show calendar and published results on rsnc.us, read from the RSNC admin's events feed.
@@ -43,6 +43,9 @@ copy keeps showing.
 Once it looks right on staging, repeat on the live site.
 
 == Changelog ==
+
+= 1.2.0 =
+* Updates itself from GitHub: new releases show as "Update available" on the Plugins page, and auto-updates can be turned on.
 
 = 1.1.0 =
 * Calendar and results: search, month, state, producer and venue filters; results also pick a season (this season and the four before). 10 events per page with page numbers (shortcode option per_page).
