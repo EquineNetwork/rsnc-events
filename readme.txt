@@ -4,7 +4,7 @@ Tags: events, calendar, results
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: Proprietary
 
 RSNC's show calendar and published results on rsnc.us, read from the RSNC admin's events feed.
@@ -43,6 +43,12 @@ copy keeps showing.
 Once it looks right on staging, repeat on the live site.
 
 == Changelog ==
+
+= 1.1.0 =
+* Calendar and results: search, month, state, producer and venue filters; results also pick a season (this season and the four before). 10 events per page with page numbers (shortcode option per_page).
+* Phones: results use the full width with compact placings (time, cattle and points on one short line).
+* Looks like the site's own event list: the theme's fonts, a date block, plain month labels, red "Find Events" button.
+* "Book Stalls & RV" button removed for now: the feed no longer carries a booking link (Global Stall Manager will supply booking status).
 
 = 1.0.0 =
 * First version: calendar and results shortcodes, settings page, cache with last-good copy.
