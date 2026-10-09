@@ -1,4 +1,4 @@
-/* RSNC Events: flyer galleries. Swiping is the browser's own scrolling (scroll-snap);
+/* RSNC Events: flyer galleries and filter drop-downs. Swiping is the browser's own scrolling (scroll-snap);
    this only wires up the arrows, arrow keys and the "1 / 3" counter. No libraries. */
 (function () {
 	'use strict';
@@ -43,6 +43,11 @@
 	function init() {
 		var galleries = document.querySelectorAll('[data-rsnc-ev-gallery]');
 		for (var i = 0; i < galleries.length; i++) { setup(galleries[i]); }
+		// Filters: picking from a drop-down searches straight away (the Search button still works).
+		var selects = document.querySelectorAll('[data-rsnc-ev-auto]');
+		for (var j = 0; j < selects.length; j++) {
+			selects[j].addEventListener('change', function () { if (this.form) { this.form.submit(); } });
+		}
 	}
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', init);
