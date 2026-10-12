@@ -23,6 +23,15 @@
 			if (now) { now.textContent = String(i + 1); }
 			if (prev) { prev.disabled = i <= 0; }
 			if (next) { next.disabled = i >= slides.length - 1; }
+			for (var t = 0; t < thumbs.length; t++) {
+				var on = t === i;
+				thumbs[t].classList.toggle('is-active', on);
+				if (on) { thumbs[t].setAttribute('aria-current', 'true'); } else { thumbs[t].removeAttribute('aria-current'); }
+			}
+		}
+		var thumbs = gallery.querySelectorAll('[data-rsnc-ev-thumb]');
+		for (var k = 0; k < thumbs.length; k++) {
+			thumbs[k].addEventListener('click', function () { go(parseInt(this.getAttribute('data-rsnc-ev-thumb'), 10) || 0); });
 		}
 		var pending = null;
 		track.addEventListener('scroll', function () {
@@ -47,6 +56,20 @@
 		var selects = document.querySelectorAll('[data-rsnc-ev-auto]');
 		for (var j = 0; j < selects.length; j++) {
 			selects[j].addEventListener('change', function () { if (this.form) { this.form.submit(); } });
+		}
+		// Leaderboards: "See status" opens the qualification status in a pop-up.
+		var dialog = document.getElementById('rsnc-ev-lb-dialog');
+		if (dialog && typeof dialog.showModal === 'function') {
+			var frame = dialog.querySelector('iframe');
+			document.addEventListener('click', function (e) {
+				var a = e.target.closest ? e.target.closest('[data-rsnc-status]') : null;
+				if (!a) { return; }
+				e.preventDefault();
+				frame.src = a.href;
+				dialog.showModal();
+			});
+			dialog.addEventListener('click', function (e) { if (e.target === dialog) { dialog.close(); } });
+			dialog.addEventListener('close', function () { frame.src = 'about:blank'; });
 		}
 	}
 	if (document.readyState === 'loading') {

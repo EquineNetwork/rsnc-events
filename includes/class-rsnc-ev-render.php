@@ -24,6 +24,11 @@ class RSNC_EV_Render {
 		wp_register_script( 'rsnc-ev', RSNC_EV_URL . 'assets/rsnc-events.js', array(), RSNC_EV_VERSION, true );
 	}
 
+	/** For the other shortcode classes (leaderboards). */
+	public static function enqueue_assets() {
+		self::enqueue();
+	}
+
 	private static function enqueue() {
 		if ( ! wp_style_is( 'rsnc-ev', 'registered' ) ) {
 			self::register_assets();
@@ -482,6 +487,17 @@ class RSNC_EV_Render {
 		}
 		echo '</div>';
 		if ( $count > 1 ) {
+			// Thumbnails of every flyer under the big one; tapping one shows it above.
+			echo '<div class="rsnc-ev-thumbs">';
+			foreach ( $flyers as $i => $flyer ) {
+				$thumb = self::flyer_picture( $flyer );
+				/* translators: 1: flyer number, 2: number of flyers */
+				$label = sprintf( __( 'Show flyer %1$d of %2$d', 'rsnc-events' ), $i + 1, $count );
+				echo '<button type="button" class="rsnc-ev-thumb' . ( 0 === $i ? ' is-active' : '' ) . '" data-rsnc-ev-thumb="' . (int) $i . '" aria-label="' . esc_attr( $label ) . '"' . ( 0 === $i ? ' aria-current="true"' : '' ) . '>';
+				echo '' !== $thumb ? '<img src="' . esc_url( $thumb ) . '" alt="" loading="lazy" decoding="async">' : '<span>' . (int) ( $i + 1 ) . '</span>';
+				echo '</button>';
+			}
+			echo '</div>';
 			echo '<button type="button" class="rsnc-ev-arrow rsnc-ev-prev" aria-label="' . esc_attr__( 'Previous flyer', 'rsnc-events' ) . '"><span aria-hidden="true">&#8249;</span></button>';
 			echo '<button type="button" class="rsnc-ev-arrow rsnc-ev-next" aria-label="' . esc_attr__( 'Next flyer', 'rsnc-events' ) . '"><span aria-hidden="true">&#8250;</span></button>';
 			echo '<p class="rsnc-ev-count" aria-live="polite"><span class="rsnc-ev-count-now">1</span> / ' . (int) $count . '</p>';
@@ -682,8 +698,24 @@ class RSNC_EV_Render {
 		return self::in_category( $event, 'featured-event' );
 	}
 
-	/** Card picture: the website event's featured image (what the site has always shown), else an image flyer or a PDF flyer's preview. */
+	/** Card picture: the flyer uploaded in the RSNC admin (an image, or a PDF's preview), else the website event's featured image. */
 	private static function picture( array $event ) {
+		$flyers = isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array();
+		// Picture files first, then a PDF's preview.
+		usort(
+			$flyers,
+			static function ( $a, $b ) {
+				$pa = 'pdf' === ( $a['type'] ?? '' ) || preg_match( '/\.pdf(\?|$)/i', (string) ( $a['url'] ?? '' ) );
+				$pb = 'pdf' === ( $b['type'] ?? '' ) || preg_match( '/\.pdf(\?|$)/i', (string) ( $b['url'] ?? '' ) );
+				return (int) $pa <=> (int) $pb;
+			}
+		);
+		foreach ( $flyers as $flyer ) {
+			$pic = self::flyer_picture( $flyer );
+			if ( '' !== $pic ) {
+				return $pic;
+			}
+		}
 		$post = self::site_post( $event );
 		if ( $post && has_post_thumbnail( $post ) ) {
 			foreach ( array( 'large', 'full' ) as $size ) {
@@ -691,12 +723,6 @@ class RSNC_EV_Render {
 				if ( '' !== $url ) {
 					return $url;
 				}
-			}
-		}
-		foreach ( ( isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array() ) as $flyer ) {
-			$pic = self::flyer_picture( $flyer );
-			if ( '' !== $pic ) {
-				return $pic;
 			}
 		}
 		return '';
