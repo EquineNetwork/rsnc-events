@@ -105,7 +105,7 @@ class RSNC_EV_Settings {
 					'[rsnc_featured number="3"]'                  => __( 'Home page Featured Events: cards with a small flyer (events in the Featured Event category).', 'rsnc-events' ),
 					'[rsnc_upcoming limit="5"]'                   => __( 'Home page Upcoming Events: the next events as compact rows, no flyers.', 'rsnc-events' ),
 					'[rsnc_reservations]'                         => __( 'Event Reservations: RSNC Production Events; Reserve Now on events with a reservation attached. Optional category="slug".', 'rsnc-events' ),
-					'[rsnc_awarded]'                              => __( 'Total paid out this season, e.g. $1,703,900 (for the header counter). [rsnc_awarded dollar="no"] leaves off the $.', 'rsnc-events' ),
+					'[rsnc_awarded]'                              => __( 'Total paid out this season, e.g. $1,699,394 (for the header counter). [rsnc_awarded dollar="no"] leaves off the $.', 'rsnc-events' ),
 					'[rsnc_leaderboard type="state"]'             => __( 'State Points leaderboard (pick a state).', 'rsnc-events' ),
 					'[rsnc_leaderboard type="national"]'          => __( 'National Points leaderboard (pick a state).', 'rsnc-events' ),
 					'[rsnc_leaderboard type="international"]'     => __( 'International Points leaderboard (pick a country).', 'rsnc-events' ),
