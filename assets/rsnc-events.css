@@ -213,3 +213,66 @@
 @media (prefers-reduced-motion: reduce) {
 	.rsnc-ev-track { scroll-behavior: auto; }
 }
+
+/* ---- Home page: [rsnc_featured] and [rsnc_upcoming] (match the site's home page) ---- */
+/* Featured: three side-by-side cards across (flyer left, date / name / city right). */
+.rsnc-ev-featured { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.rsnc-ev-feat-card { display: flex; flex-direction: row; align-items: center; gap: 20px; padding: 14px; background: #fff; border: 1px solid var(--rsnc-ev-line); border-radius: 8px; box-shadow: 0 1px 2px rgba(15, 23, 42, .03), 0 6px 18px rgba(15, 23, 42, .03); box-sizing: border-box; overflow: hidden; }
+.rsnc-ev-feat-img { flex: 0 0 120px; max-width: 120px; }
+.rsnc-ev-feat-img a { display: block; }
+.rsnc-ev-feat-img img { display: block; width: 100%; height: 155px; object-fit: cover; object-position: top center; border-radius: 4px; }
+.rsnc-ev-feat-text { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rsnc-ev-feat-when, .rsnc-ev-up-when { color: var(--rsnc-ev-accent); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.rsnc-ev .rsnc-ev-feat-name { margin: 0; font-weight: 800; font-size: 15px; line-height: 1.2; text-transform: uppercase; overflow-wrap: break-word; }
+.rsnc-ev .rsnc-ev-feat-name a { color: var(--rsnc-ev-ink); text-decoration: none; }
+.rsnc-ev .rsnc-ev-feat-name a:hover { color: var(--rsnc-ev-accent); }
+.rsnc-ev-feat-place, .rsnc-ev-up-place { color: var(--rsnc-ev-muted); font-size: 13px; margin: 0; }
+@media (max-width: 900px) { .rsnc-ev-featured { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+	.rsnc-ev-featured { grid-template-columns: 1fr; }
+	.rsnc-ev-feat-img { flex-basis: 96px; max-width: 96px; }
+	.rsnc-ev-feat-img img { height: 124px; }
+}
+
+/* Event Reservations: [rsnc_reservations] rows (flyer + days-to-go badge, details, Reserve Now). */
+.rsnc-ev-resv { display: flex; flex-direction: column; gap: 14px; }
+.rsnc-ev-resv-row { display: flex; align-items: center; gap: 20px; padding: 14px; background: #fff; border: 1px solid var(--rsnc-ev-line); border-radius: 8px; box-shadow: 0 1px 2px rgba(15, 23, 42, .03), 0 6px 18px rgba(15, 23, 42, .03); }
+.rsnc-ev-resv-img { position: relative; flex: 0 0 120px; width: 120px; }
+.rsnc-ev-resv-img img, .rsnc-ev-resv-noimg { display: block; width: 120px; height: 150px; object-fit: cover; object-position: top center; border-radius: 4px; background: #f1f2f4; }
+.rsnc-ev-resv-badge { position: absolute; left: 6px; top: 6px; padding: 3px 8px; border-radius: 999px; background: var(--rsnc-ev-accent); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.rsnc-ev-resv-body { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rsnc-ev-resv-producer { margin: 0; font-size: 13px; font-weight: 600; color: var(--rsnc-ev-ink); }
+.rsnc-ev-resv-actions { flex: 0 0 auto; }
+.rsnc-ev .rsnc-ev-btn { display: inline-block; padding: 12px 22px; border-radius: 4px; background: var(--rsnc-ev-accent); color: #fff; font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }
+.rsnc-ev .rsnc-ev-btn:hover, .rsnc-ev .rsnc-ev-btn:focus { background: #a80f38; color: #fff; }
+@media (max-width: 600px) {
+	.rsnc-ev-resv-row { flex-wrap: wrap; align-items: flex-start; gap: 14px; }
+	.rsnc-ev-resv-img { flex-basis: 96px; width: 96px; }
+	.rsnc-ev-resv-img img, .rsnc-ev-resv-noimg { width: 96px; height: 124px; }
+	.rsnc-ev-resv-body { flex-basis: calc(100% - 110px); }
+	.rsnc-ev-resv-actions { flex-basis: 100%; }
+	.rsnc-ev .rsnc-ev-btn { display: block; text-align: center; }
+}
+.rsnc-ev-up-month { margin: 0 0 4px; padding-bottom: 12px; border-bottom: 1px solid var(--rsnc-ev-line); color: var(--rsnc-ev-navy); font-weight: 600; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.rsnc-ev-up-row { display: flex; align-items: flex-start; gap: 22px; padding: 20px 0; border-bottom: 1px solid var(--rsnc-ev-line); }
+.rsnc-ev-up-row .rsnc-ev-dateblock { flex: 0 0 56px; border-right: 1px solid var(--rsnc-ev-line); padding-right: 18px; }
+.rsnc-ev-up-body { min-width: 0; }
+.rsnc-ev .rsnc-ev-up-name { margin: 4px 0; font-weight: 800; font-size: 15px; line-height: 1.2; text-transform: uppercase; }
+.rsnc-ev-up-name a { color: var(--rsnc-ev-ink); text-decoration: none; }
+.rsnc-ev-up-name a:hover { color: var(--rsnc-ev-accent); }
+
+/* 1.3.1 (Whitney): smaller fields so Find Events sits on the same row, a small button,
+   bold dates and titles, bigger bold month labels. */
+.rsnc-ev .rsnc-ev-field input, .rsnc-ev .rsnc-ev-field select { min-height: 42px; padding-top: 6px; padding-bottom: 6px; font-size: 15px; }
+.rsnc-ev .rsnc-ev-field select { padding-right: 34px; background-position: right 12px center; }
+.rsnc-ev .rsnc-ev-find { min-height: 36px; padding: 0 18px; font-size: 14px; }
+.rsnc-ev .rsnc-ev-when { font-weight: 800 !important; }
+.rsnc-ev .rsnc-ev-feat-when, .rsnc-ev .rsnc-ev-up-when { font-weight: 800 !important; }
+.rsnc-ev .rsnc-ev-feat-name, .rsnc-ev .rsnc-ev-feat-name a, .rsnc-ev .rsnc-ev-up-name, .rsnc-ev .rsnc-ev-up-name a { font-weight: 800 !important; }
+.rsnc-ev .rsnc-ev-name { font-size: 17px; font-weight: 800 !important; letter-spacing: .02em; }
+.rsnc-ev .rsnc-ev-month-title, .rsnc-ev .rsnc-ev-up-month { font-size: 22px; font-weight: 800 !important; color: var(--rsnc-ev-navy); }
+@media (min-width: 1000px) {
+	.rsnc-ev .rsnc-ev-filters { grid-template-columns: minmax(0, 1.3fr) repeat(4, minmax(0, 1fr)) auto; align-items: center; }
+	.rsnc-ev-results .rsnc-ev-filters { grid-template-columns: minmax(0, 1.3fr) repeat(5, minmax(0, 1fr)) auto; }
+	.rsnc-ev .rsnc-ev-filter-actions { grid-column: auto; flex-wrap: nowrap; gap: 10px; }
+}

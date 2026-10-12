@@ -4,7 +4,7 @@ Tags: events, calendar, results
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.3.1
 License: Proprietary
 
 RSNC's show calendar and published results on rsnc.us, read from the RSNC admin's events feed.
@@ -43,6 +43,15 @@ copy keeps showing.
 Once it looks right on staging, repeat on the live site.
 
 == Changelog ==
+
+= 1.3.1 =
+* Featured Events: three cards across, flyer picture from the website event (fixes a missing flyer).
+* New [rsnc_reservations] for the Event Reservations page: RSNC Production Events, Reserve Now on events with a reservation attached.
+
+= 1.3.0 =
+* New [rsnc_featured number="3"]: the home page Featured Events cards (small flyer, date, name, city), from the RSNC admin.
+* New [rsnc_upcoming limit="5"]: the next upcoming events as compact rows, no flyers, no page numbers.
+* Both link to the event's page on this site (with Reserve Now) and use the event name riders know.
 
 = 1.2.2 =
 * The default feed address is the live feed, https://legacy.rsnc.us/api/events.php.
