@@ -94,11 +94,31 @@ class RSNC_EV_Settings {
 			<?php endif; ?>
 			<?php settings_errors( self::OPTION ); ?>
 
-			<p><?php esc_html_e( 'Events, flyers and results come from the RSNC admin. Add these shortcodes to pages:', 'rsnc-events' ); ?></p>
-			<ul style="list-style:disc;margin-left:20px">
-				<li><code>[rsnc_calendar]</code> — <?php esc_html_e( 'upcoming events by month, with flyers', 'rsnc-events' ); ?></li>
-				<li><code>[rsnc_results]</code> — <?php esc_html_e( 'this season’s past events and their published results', 'rsnc-events' ); ?></li>
-			</ul>
+			<p><?php esc_html_e( 'Events, flyers, results and leaderboards come from the RSNC admin. Shortcodes to put on pages:', 'rsnc-events' ); ?></p>
+			<table class="widefat striped" style="max-width:980px;margin-bottom:24px">
+				<thead><tr><th><?php esc_html_e( 'Shortcode', 'rsnc-events' ); ?></th><th><?php esc_html_e( 'Shows', 'rsnc-events' ); ?></th></tr></thead>
+				<tbody>
+				<?php
+				$codes = array(
+					'[rsnc_calendar]'                             => __( 'Event Schedule: upcoming events by month with search and filters, flyers (first one big, thumbnails of the rest).', 'rsnc-events' ),
+					'[rsnc_results]'                              => __( 'Event Results: past events and their published results.', 'rsnc-events' ),
+					'[rsnc_featured number="3"]'                  => __( 'Home page Featured Events: cards with a small flyer (events in the Featured Event category).', 'rsnc-events' ),
+					'[rsnc_upcoming limit="5"]'                   => __( 'Home page Upcoming Events: the next events as compact rows, no flyers.', 'rsnc-events' ),
+					'[rsnc_reservations]'                         => __( 'Event Reservations: RSNC Production Events; Reserve Now on events with a reservation attached. Optional category="slug".', 'rsnc-events' ),
+					'[rsnc_awarded]'                              => __( 'Total paid out this season, e.g. $1,699,394 (for the header counter). [rsnc_awarded dollar="no"] leaves off the $.', 'rsnc-events' ),
+					'[rsnc_leaderboard type="state"]'             => __( 'State Points leaderboard (pick a state).', 'rsnc-events' ),
+					'[rsnc_leaderboard type="national"]'          => __( 'National Points leaderboard (pick a state).', 'rsnc-events' ),
+					'[rsnc_leaderboard type="international"]'     => __( 'International Points leaderboard (pick a country).', 'rsnc-events' ),
+					'[rsnc_leaderboard type="northeast"]'         => __( 'Northeast Circuit Finals: shows ridden and who has qualified (pick a state).', 'rsnc-events' ),
+					'[rsnc_leaderboard type="hall-of-fame"]'      => __( 'Hall of Fame: Top 10 and the Platinum, Gold, Silver and Bronze tiers.', 'rsnc-events' ),
+					'[rsnc_leaderboard type="challenge"]'         => __( 'Challenge of the Champions: top 10 per class with the Face Off Zone.', 'rsnc-events' ),
+				);
+				foreach ( $codes as $code => $what ) {
+					echo '<tr><td style="white-space:nowrap"><code>' . esc_html( $code ) . '</code></td><td>' . esc_html( $what ) . '</td></tr>';
+				}
+				?>
+				</tbody>
+			</table>
 
 			<form method="post" action="options.php">
 				<?php settings_fields( 'rsnc_ev' ); ?>
@@ -107,7 +127,7 @@ class RSNC_EV_Settings {
 						<th scope="row"><label for="rsnc_ev_feed_url"><?php esc_html_e( 'Feed address', 'rsnc-events' ); ?></label></th>
 						<td>
 							<input type="url" class="regular-text code" id="rsnc_ev_feed_url" name="<?php echo esc_attr( self::OPTION ); ?>[feed_url]" value="<?php echo esc_attr( self::get( 'feed_url' ) ); ?>" required>
-							<p class="description"><?php esc_html_e( 'Live: https://legacy.rsnc.us/api/events.php (moving to https://admin.rsnc.us/api/events.php — change it here when it does).', 'rsnc-events' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Live: https://admin.rsnc.us/api/events.php', 'rsnc-events' ); ?></p>
 						</td>
 					</tr>
 					<tr>

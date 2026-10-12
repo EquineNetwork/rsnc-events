@@ -35,6 +35,7 @@ class RSNC_EV_Boards {
 
 	public static function init() {
 		add_shortcode( 'rsnc_leaderboard', array( __CLASS__, 'shortcode' ) );
+		add_shortcode( 'rsnc_awarded', array( __CLASS__, 'awarded' ) );
 	}
 
 	/** GET a page from the admin server, cached (15 minutes; a failure is remembered for 1 minute). */
@@ -353,5 +354,32 @@ class RSNC_EV_Boards {
 		}
 		echo '</div>';
 		return ob_get_clean();
+	}
+
+	/**
+	 * [rsnc_awarded]: total paid out this season ("$1,699,394"), from the admin's api/wins (beside
+	 * the events feed; a plain number). Checked every 5 minutes; if the admin can't be reached,
+	 * the last total it gave is shown.
+	 */
+	public static function awarded( $atts ) {
+		$atts  = shortcode_atts( array( 'dollar' => 'yes' ), $atts, 'rsnc_awarded' );
+		$total = get_transient( 'rsnc_ev_awarded' );
+		if ( false === $total ) {
+			$url  = preg_replace( '~/events\.php(\?.*)?$~', '/wins', (string) RSNC_EV_Settings::get( 'feed_url' ) );
+			$res  = $url ? wp_safe_remote_get( $url, array( 'timeout' => 8, 'headers' => array( 'Accept' => 'text/plain' ) ) ) : null;
+			$body = ( $res && ! is_wp_error( $res ) && 200 === (int) wp_remote_retrieve_response_code( $res ) ) ? trim( (string) wp_remote_retrieve_body( $res ) ) : '';
+			if ( preg_match( '/^\d+(\.\d+)?$/', $body ) ) {
+				$total = (float) $body;
+				update_option( 'rsnc_ev_awarded_last', $total, false );
+				set_transient( 'rsnc_ev_awarded', $total, 5 * MINUTE_IN_SECONDS );
+			} else {
+				$total = get_option( 'rsnc_ev_awarded_last', '' );
+				set_transient( 'rsnc_ev_awarded', $total, 2 * MINUTE_IN_SECONDS );
+			}
+		}
+		if ( '' === $total || null === $total ) {
+			return '';
+		}
+		return ( 'no' === strtolower( (string) $atts['dollar'] ) ? '' : '$' ) . number_format( round( (float) $total ) );
 	}
 }
