@@ -46,6 +46,8 @@ Once it looks right on staging, repeat on the live site.
 
 = 1.4.1 =
 * Leaderboards: the Points column title lines up with the points.
+* New [rsnc_awarded]: total paid out this season, from the RSNC admin (for the header counter).
+* Settings page lists every shortcode.
 
 = 1.4.0 =
 * New [rsnc_leaderboard type="state|national|international|northeast|hall-of-fame|challenge"]: the RSNC points lists in the site look (pick a state or country; See status opens in a pop-up).
