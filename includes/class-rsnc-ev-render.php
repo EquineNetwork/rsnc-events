@@ -15,6 +15,7 @@ class RSNC_EV_Render {
 		add_shortcode( 'rsnc_results', array( __CLASS__, 'results' ) );
 		add_shortcode( 'rsnc_featured', array( __CLASS__, 'featured' ) );
 		add_shortcode( 'rsnc_upcoming', array( __CLASS__, 'upcoming' ) );
+		add_shortcode( 'rsnc_reservations', array( __CLASS__, 'reservations' ) );
 	}
 
 	public static function register_assets() {
@@ -438,7 +439,8 @@ class RSNC_EV_Render {
 				}
 			}
 		}
-		set_transient( $key, $picture, DAY_IN_SECONDS );
+		// A blank is only remembered briefly: a new flyer's preview can appear minutes later.
+		set_transient( $key, $picture, '' === $picture ? 10 * MINUTE_IN_SECONDS : DAY_IN_SECONDS );
 		return $picture;
 	}
 
@@ -676,24 +678,47 @@ class RSNC_EV_Render {
 		return $list;
 	}
 
-	/** Featured: the admin's "featured-event" category, or the website event's Featured Event category. */
 	private static function is_featured( array $event ) {
-		if ( isset( $event['categories'] ) && is_array( $event['categories'] ) ) {
-			return in_array( 'featured-event', $event['categories'], true );
-		}
-		$post = self::site_post( $event );
-		return $post && has_term( 'featured-event', 'en_event_category', $post );
+		return self::in_category( $event, 'featured-event' );
 	}
 
+	/** Card picture: the website event's featured image (what the site has always shown), else an image flyer or a PDF flyer's preview. */
 	private static function picture( array $event ) {
+		$post = self::site_post( $event );
+		if ( $post && has_post_thumbnail( $post ) ) {
+			foreach ( array( 'large', 'full' ) as $size ) {
+				$url = (string) get_the_post_thumbnail_url( $post, $size );
+				if ( '' !== $url ) {
+					return $url;
+				}
+			}
+		}
 		foreach ( ( isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array() ) as $flyer ) {
 			$pic = self::flyer_picture( $flyer );
 			if ( '' !== $pic ) {
 				return $pic;
 			}
 		}
+		return '';
+	}
+
+	/** The website event's own Reserve Now page (its published reservation), or ''. */
+	private static function reserve_link( array $event ) {
 		$post = self::site_post( $event );
-		return $post ? (string) get_the_post_thumbnail_url( $post, 'medium' ) : '';
+		$id   = $post ? (int) get_post_meta( $post, '_equine_event_manager_reservation_id', true ) : 0;
+		if ( $id <= 0 || 'publish' !== get_post_status( $id ) ) {
+			return '';
+		}
+		return (string) home_url( user_trailingslashit( 'equine-event/' . $id ) );
+	}
+
+	/** In a category: the admin's categories when the feed sends them, else the website event's categories. */
+	private static function in_category( array $event, $slug ) {
+		if ( isset( $event['categories'] ) && is_array( $event['categories'] ) ) {
+			return in_array( $slug, $event['categories'], true );
+		}
+		$post = self::site_post( $event );
+		return $post && has_term( $slug, 'en_event_category', $post );
 	}
 
 	/** [rsnc_featured number="3"]: Featured Events cards (small flyer left, date, name, city). */
@@ -714,13 +739,14 @@ class RSNC_EV_Render {
 			$link = self::event_link( $event );
 			$pic  = self::picture( $event );
 			$name = self::display_name( $event );
-			echo '<article class="rsnc-ev-feat-card">';
-			echo $link ? '<a class="rsnc-ev-feat-link" href="' . esc_url( $link ) . '">' : '<div class="rsnc-ev-feat-link">';
-			echo '<span class="rsnc-ev-feat-img">' . ( '' !== $pic ? '<img src="' . esc_url( $pic ) . '" alt="" loading="lazy">' : '' ) . '</span>';
-			echo '<span class="rsnc-ev-feat-text"><span class="rsnc-ev-feat-when">' . esc_html( self::date_range( $event['startDate'], $event['endDate'] ) ) . '</span>';
-			echo '<span class="rsnc-ev-feat-name">' . esc_html( $name ) . '</span>';
-			echo '<span class="rsnc-ev-feat-place">' . esc_html( self::city_state( $event ) ) . '</span></span>';
-			echo $link ? '</a>' : '</div>';
+			echo '<article class="rsnc-ev-feat-card' . ( '' === $pic ? ' rsnc-ev-feat-card--noimg' : '' ) . '">';
+			if ( '' !== $pic ) {
+				$img = '<img src="' . esc_url( $pic ) . '" alt="' . esc_attr( $name ) . '" loading="lazy">';
+				echo '<div class="rsnc-ev-feat-img">' . ( $link ? '<a href="' . esc_url( $link ) . '" tabindex="-1">' . $img . '</a>' : $img ) . '</div>';
+			}
+			echo '<div class="rsnc-ev-feat-text"><p class="rsnc-ev-feat-when">' . esc_html( self::short_range( $event ) ) . '</p>';
+			echo '<h3 class="rsnc-ev-feat-name">' . ( $link ? '<a href="' . esc_url( $link ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name ) ) . '</h3>';
+			echo '<p class="rsnc-ev-feat-place">' . esc_html( self::city_state( $event ) ) . '</p></div>';
 			echo '</article>';
 		}
 		echo '</div>';
@@ -755,6 +781,70 @@ class RSNC_EV_Render {
 			echo '<div class="rsnc-ev-up-body"><p class="rsnc-ev-up-when">' . esc_html( self::short_range( $event ) ) . '</p>';
 			echo '<h3 class="rsnc-ev-up-name">' . ( $link ? '<a href="' . esc_url( $link ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name ) ) . '</h3>';
 			echo '<p class="rsnc-ev-up-place">' . esc_html( self::city_state( $event ) ) . '</p></div></div>';
+		}
+		echo '</div>';
+		return ob_get_clean();
+	}
+
+	/** [rsnc_reservations category="rsnc-production-events"]: upcoming events with their Reserve Now buttons. */
+	public static function reservations( $atts ) {
+		self::enqueue();
+		$atts   = shortcode_atts( array( 'category' => 'rsnc-production-events', 'limit' => 0 ), $atts, 'rsnc_reservations' );
+		$events = RSNC_EV_Feed::events();
+		if ( null === $events ) {
+			return self::unavailable();
+		}
+		$slug = sanitize_title( (string) $atts['category'] );
+		$list = self::upcoming_events( $events );
+		if ( '' !== $slug ) {
+			$list = array_values(
+				array_filter(
+					$list,
+					static function ( $e ) use ( $slug ) {
+						return self::in_category( $e, $slug );
+					}
+				)
+			);
+		}
+		if ( (int) $atts['limit'] > 0 ) {
+			$list = array_slice( $list, 0, (int) $atts['limit'] );
+		}
+		$today = strtotime( self::today() . ' 12:00:00' );
+		ob_start();
+		echo '<div class="rsnc-ev rsnc-ev-resv">';
+		if ( ! $list ) {
+			echo '<p class="rsnc-ev-empty">' . esc_html__( 'No events are open for reservations yet. Please check back soon.', 'rsnc-events' ) . '</p>';
+		}
+		foreach ( $list as $event ) {
+			$link    = self::event_link( $event );
+			$reserve = self::reserve_link( $event );
+			$pic     = self::picture( $event );
+			$name    = self::display_name( $event );
+			$start   = strtotime( self::ymd( $event['startDate'] ) . ' 12:00:00' );
+			$days    = $start ? (int) round( ( $start - $today ) / DAY_IN_SECONDS ) : 0;
+			$venue   = trim( (string) $event['arenaName'] );
+			$where   = implode( ' · ', array_filter( array( $venue, self::city_state( $event ) ) ) );
+			echo '<article class="rsnc-ev-resv-row">';
+			echo '<div class="rsnc-ev-resv-img">';
+			echo '' !== $pic ? '<img src="' . esc_url( $pic ) . '" alt="' . esc_attr( $name ) . '" loading="lazy">' : '<span class="rsnc-ev-resv-noimg" aria-hidden="true"></span>';
+			if ( $days > 0 ) {
+				/* translators: %d: days until the event starts */
+				echo '<span class="rsnc-ev-resv-badge">' . esc_html( sprintf( _n( '%d day', '%d days', $days, 'rsnc-events' ), $days ) ) . '</span>';
+			}
+			echo '</div><div class="rsnc-ev-resv-body">';
+			echo '<p class="rsnc-ev-feat-when">' . esc_html( self::short_range( $event ) ) . '</p>';
+			echo '<h3 class="rsnc-ev-feat-name">' . ( $link ? '<a href="' . esc_url( $link ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name ) ) . '</h3>';
+			if ( ! empty( $event['producerName'] ) ) {
+				echo '<p class="rsnc-ev-resv-producer">' . esc_html( (string) $event['producerName'] ) . '</p>';
+			}
+			if ( '' !== $where ) {
+				echo '<p class="rsnc-ev-feat-place">' . esc_html( $where ) . '</p>';
+			}
+			echo '</div><div class="rsnc-ev-resv-actions">';
+			if ( '' !== $reserve ) {
+				echo '<a class="rsnc-ev-btn" href="' . esc_url( $reserve ) . '">' . esc_html__( 'Reserve Now', 'rsnc-events' ) . '</a>';
+			}
+			echo '</div></article>';
 		}
 		echo '</div>';
 		return ob_get_clean();
