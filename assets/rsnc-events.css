@@ -213,3 +213,22 @@
 @media (prefers-reduced-motion: reduce) {
 	.rsnc-ev-track { scroll-behavior: auto; }
 }
+
+/* ---- Home page: [rsnc_featured] and [rsnc_upcoming] (match the site's home page) ---- */
+.rsnc-ev-featured { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.rsnc-ev-feat-card { background: #fff; border: 1px solid var(--rsnc-ev-line); border-radius: 6px; }
+.rsnc-ev-feat-link { display: flex; align-items: center; gap: 18px; padding: 16px; color: inherit; text-decoration: none; height: 100%; box-sizing: border-box; }
+.rsnc-ev-feat-img { flex: 0 0 116px; width: 116px; }
+.rsnc-ev-feat-img img { display: block; width: 116px; height: auto; max-height: 150px; object-fit: cover; }
+.rsnc-ev-feat-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rsnc-ev-feat-when, .rsnc-ev-up-when { color: var(--rsnc-ev-accent); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.rsnc-ev-feat-name { font-weight: 800; font-size: 16px; line-height: 1.15; text-transform: uppercase; color: var(--rsnc-ev-ink); }
+.rsnc-ev-feat-place, .rsnc-ev-up-place { color: var(--rsnc-ev-muted); font-size: 13px; margin: 0; }
+.rsnc-ev-feat-link:hover .rsnc-ev-feat-name { color: var(--rsnc-ev-accent); }
+.rsnc-ev-up-month { margin: 0 0 4px; padding-bottom: 12px; border-bottom: 1px solid var(--rsnc-ev-line); color: var(--rsnc-ev-navy); font-weight: 600; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.rsnc-ev-up-row { display: flex; align-items: flex-start; gap: 22px; padding: 20px 0; border-bottom: 1px solid var(--rsnc-ev-line); }
+.rsnc-ev-up-row .rsnc-ev-dateblock { flex: 0 0 56px; border-right: 1px solid var(--rsnc-ev-line); padding-right: 18px; }
+.rsnc-ev-up-body { min-width: 0; }
+.rsnc-ev-up-name { margin: 4px 0; font-weight: 800; font-size: 15px; line-height: 1.2; text-transform: uppercase; }
+.rsnc-ev-up-name a { color: var(--rsnc-ev-ink); text-decoration: none; }
+.rsnc-ev-up-name a:hover { color: var(--rsnc-ev-accent); }

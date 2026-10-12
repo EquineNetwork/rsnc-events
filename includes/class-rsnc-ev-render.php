@@ -1,6 +1,6 @@
 <?php
 /**
- * The [rsnc_calendar] and [rsnc_results] shortcodes.
+ * The [rsnc_calendar], [rsnc_results], [rsnc_featured] and [rsnc_upcoming] shortcodes.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,6 +13,8 @@ class RSNC_EV_Render {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
 		add_shortcode( 'rsnc_calendar', array( __CLASS__, 'calendar' ) );
 		add_shortcode( 'rsnc_results', array( __CLASS__, 'results' ) );
+		add_shortcode( 'rsnc_featured', array( __CLASS__, 'featured' ) );
+		add_shortcode( 'rsnc_upcoming', array( __CLASS__, 'upcoming' ) );
 	}
 
 	public static function register_assets() {
@@ -623,5 +625,138 @@ class RSNC_EV_Render {
 			echo '</tr>';
 		}
 		echo '</tbody></table>';
+	}
+
+	/* ------------------------------------------------- home page: featured + upcoming */
+
+	/** The website's own event post for a feed event (Equine Event Manager's event, with Reserve Now), or 0. */
+	private static function site_post( array $event ) {
+		$id = isset( $event['wordpressPostId'] ) ? (int) $event['wordpressPostId'] : 0;
+		return ( $id > 0 && 'publish' === get_post_status( $id ) ) ? $id : 0;
+	}
+
+	/** Name riders know: the website event's title when there is one, else the admin's name. */
+	private static function display_name( array $event ) {
+		$post = self::site_post( $event );
+		$name = $post ? html_entity_decode( get_the_title( $post ), ENT_QUOTES, 'UTF-8' ) : '';
+		return '' !== trim( $name ) ? $name : (string) $event['eventName'];
+	}
+
+	private static function event_link( array $event ) {
+		$post = self::site_post( $event );
+		return $post ? (string) get_permalink( $post ) : '';
+	}
+
+	/** "Oct 15, 2026" / "Oct 16–18, 2026" (no weekday), as on the home page. */
+	private static function short_range( array $event ) {
+		return (string) preg_replace( '/^[A-Za-z]{3}, /', '', self::date_range( $event['startDate'], $event['endDate'] ) );
+	}
+
+	private static function city_state( array $event ) {
+		return trim( trim( (string) $event['arenaCity'] ) . ( ! empty( $event['arenaState'] ) ? ', ' . $event['arenaState'] : '' ), ', ' );
+	}
+
+	/** Upcoming, not cancelled, soonest first. */
+	private static function upcoming_events( array $events ) {
+		$today = self::today();
+		$list  = array_values(
+			array_filter(
+				$events,
+				static function ( $e ) use ( $today ) {
+					return empty( $e['cancelled'] ) && self::ymd( $e['endDate'] ?? '' ) >= $today;
+				}
+			)
+		);
+		usort(
+			$list,
+			static function ( $a, $b ) {
+				return strcmp( (string) $a['startDate'], (string) $b['startDate'] ) ?: ( (int) $a['eventUID'] <=> (int) $b['eventUID'] );
+			}
+		);
+		return $list;
+	}
+
+	/** Featured: the admin's "featured-event" category, or the website event's Featured Event category. */
+	private static function is_featured( array $event ) {
+		if ( isset( $event['categories'] ) && is_array( $event['categories'] ) ) {
+			return in_array( 'featured-event', $event['categories'], true );
+		}
+		$post = self::site_post( $event );
+		return $post && has_term( 'featured-event', 'en_event_category', $post );
+	}
+
+	private static function picture( array $event ) {
+		foreach ( ( isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array() ) as $flyer ) {
+			$pic = self::flyer_picture( $flyer );
+			if ( '' !== $pic ) {
+				return $pic;
+			}
+		}
+		$post = self::site_post( $event );
+		return $post ? (string) get_the_post_thumbnail_url( $post, 'medium' ) : '';
+	}
+
+	/** [rsnc_featured number="3"]: Featured Events cards (small flyer left, date, name, city). */
+	public static function featured( $atts ) {
+		self::enqueue();
+		$atts   = shortcode_atts( array( 'number' => 3 ), $atts, 'rsnc_featured' );
+		$events = RSNC_EV_Feed::events();
+		if ( null === $events ) {
+			return '';
+		}
+		$list = array_slice( array_values( array_filter( self::upcoming_events( $events ), array( __CLASS__, 'is_featured' ) ) ), 0, max( 1, (int) $atts['number'] ) );
+		if ( ! $list ) {
+			return '';
+		}
+		ob_start();
+		echo '<div class="rsnc-ev rsnc-ev-featured">';
+		foreach ( $list as $event ) {
+			$link = self::event_link( $event );
+			$pic  = self::picture( $event );
+			$name = self::display_name( $event );
+			echo '<article class="rsnc-ev-feat-card">';
+			echo $link ? '<a class="rsnc-ev-feat-link" href="' . esc_url( $link ) . '">' : '<div class="rsnc-ev-feat-link">';
+			echo '<span class="rsnc-ev-feat-img">' . ( '' !== $pic ? '<img src="' . esc_url( $pic ) . '" alt="" loading="lazy">' : '' ) . '</span>';
+			echo '<span class="rsnc-ev-feat-text"><span class="rsnc-ev-feat-when">' . esc_html( self::date_range( $event['startDate'], $event['endDate'] ) ) . '</span>';
+			echo '<span class="rsnc-ev-feat-name">' . esc_html( $name ) . '</span>';
+			echo '<span class="rsnc-ev-feat-place">' . esc_html( self::city_state( $event ) ) . '</span></span>';
+			echo $link ? '</a>' : '</div>';
+			echo '</article>';
+		}
+		echo '</div>';
+		return ob_get_clean();
+	}
+
+	/** [rsnc_upcoming limit="5"]: the next events as compact rows (date block, date, name, city), no flyers, no pages. */
+	public static function upcoming( $atts ) {
+		self::enqueue();
+		$atts   = shortcode_atts( array( 'limit' => 5 ), $atts, 'rsnc_upcoming' );
+		$events = RSNC_EV_Feed::events();
+		if ( null === $events ) {
+			return self::unavailable();
+		}
+		$list = array_slice( self::upcoming_events( $events ), 0, max( 1, (int) $atts['limit'] ) );
+		ob_start();
+		echo '<div class="rsnc-ev rsnc-ev-upcoming">';
+		if ( ! $list ) {
+			echo '<p class="rsnc-ev-empty">' . esc_html__( 'No upcoming events are scheduled yet. Please check back soon.', 'rsnc-events' ) . '</p>';
+		}
+		$month = '';
+		foreach ( $list as $event ) {
+			$m = substr( self::ymd( $event['startDate'] ), 0, 7 );
+			if ( $m !== $month ) {
+				$month = $m;
+				echo '<p class="rsnc-ev-up-month">' . esc_html( date_i18n( 'F Y', strtotime( $m . '-15' ) ) ) . '</p>';
+			}
+			$link = self::event_link( $event );
+			$name = self::display_name( $event );
+			echo '<div class="rsnc-ev-up-row">';
+			self::date_block( $event['startDate'] );
+			echo '<div class="rsnc-ev-up-body"><p class="rsnc-ev-up-when">' . esc_html( self::short_range( $event ) ) . '</p>';
+			echo '<h3 class="rsnc-ev-up-name">' . ( $link ? '<a href="' . esc_url( $link ) . '">' . esc_html( $name ) . '</a>' : esc_html( $name ) ) . '</h3>';
+			echo '<p class="rsnc-ev-up-place">' . esc_html( self::city_state( $event ) ) . '</p></div></div>';
+		}
+		echo '</div>';
+		return ob_get_clean();
 	}
 }
