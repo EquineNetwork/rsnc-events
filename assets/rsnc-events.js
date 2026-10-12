@@ -57,19 +57,30 @@
 		for (var j = 0; j < selects.length; j++) {
 			selects[j].addEventListener('change', function () { if (this.form) { this.form.submit(); } });
 		}
-		// Leaderboards: "See status" opens the qualification status in a pop-up.
+		// Leaderboards: "See status" shows the rider's status in a pop-up in the site's style.
 		var dialog = document.getElementById('rsnc-ev-lb-dialog');
-		if (dialog && typeof dialog.showModal === 'function') {
-			var frame = dialog.querySelector('iframe');
+		if (dialog && typeof dialog.showModal === 'function' && window.fetch) {
+			var body = dialog.querySelector('.rsnc-ev-lb-status-body');
+			var esc = function (t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 			document.addEventListener('click', function (e) {
 				var a = e.target.closest ? e.target.closest('[data-rsnc-status]') : null;
 				if (!a) { return; }
 				e.preventDefault();
-				frame.src = a.href;
+				var src = a.getAttribute('data-rsnc-status');
+				body.innerHTML = '<p class="rsnc-ev-lb-loading">Loading…</p>';
 				dialog.showModal();
+				fetch(dialog.getAttribute('data-rest') + (dialog.getAttribute('data-rest').indexOf('?') === -1 ? '?' : '&') + 'src=' + encodeURIComponent(src))
+					.then(function (r) { if (!r.ok) { throw new Error(); } return r.json(); })
+					.then(function (d) {
+						var html = '<h3 class="rsnc-ev-lb-who">' + esc(d.name || '') + '</h3><div class="rsnc-ev-lb-facts">';
+						(d.items || []).forEach(function (it) {
+							html += '<div class="rsnc-ev-lb-fact' + (it.qualified ? ' is-ok' : '') + '"><b>' + esc(it.value) + '</b><span>' + esc(it.label) + '</span></div>';
+						});
+						body.innerHTML = html + '</div>';
+					})
+					.catch(function () { body.innerHTML = '<p class="rsnc-ev-lb-loading">Status isn\'t available right now.</p>'; });
 			});
 			dialog.addEventListener('click', function (e) { if (e.target === dialog) { dialog.close(); } });
-			dialog.addEventListener('close', function () { frame.src = 'about:blank'; });
 		}
 	}
 	if (document.readyState === 'loading') {

@@ -4,7 +4,7 @@ Tags: events, calendar, results
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: Proprietary
 
 RSNC's show calendar and published results on rsnc.us, read from the RSNC admin's events feed.
@@ -43,6 +43,9 @@ copy keeps showing.
 Once it looks right on staging, repeat on the live site.
 
 == Changelog ==
+
+= 1.4.2 =
+* Leaderboards: See status opens a pop-up in the site's style (rider name, the numbers and Qualified), sized to fit.
 
 = 1.4.1 =
 * Leaderboards: the Points column title lines up with the points.

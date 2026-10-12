@@ -36,6 +36,7 @@ class RSNC_EV_Boards {
 	public static function init() {
 		add_shortcode( 'rsnc_leaderboard', array( __CLASS__, 'shortcode' ) );
 		add_shortcode( 'rsnc_awarded', array( __CLASS__, 'awarded' ) );
+		add_action( 'rest_api_init', array( __CLASS__, 'rest' ) );
 	}
 
 	/** GET a page from the admin server, cached (15 minutes; a failure is remembered for 1 minute). */
@@ -289,7 +290,7 @@ class RSNC_EV_Boards {
 			echo '<td class="rsnc-ev-lb-pts">' . esc_html( null !== $pts_at ? ( $c[ $pts_at ] ?? '' ) : '' ) . '</td><td class="rsnc-ev-lb-st">';
 			if ( '' !== $row['status'] ) {
 				$url = self::base() . '/ratingslist/' . ltrim( $row['status'], '/' );
-				echo '<a class="rsnc-ev-lb-status" href="' . esc_url( $url ) . '" target="_blank" rel="noopener" data-rsnc-status>' . esc_html__( 'See status', 'rsnc-events' ) . '</a>';
+				echo '<a class="rsnc-ev-lb-status" href="' . esc_url( $url ) . '" target="_blank" rel="noopener" data-rsnc-status="' . esc_attr( ltrim( $row['status'], '/' ) ) . '">' . esc_html__( 'See status', 'rsnc-events' ) . '</a>';
 			}
 			echo '</td></tr>';
 		}
@@ -313,7 +314,46 @@ class RSNC_EV_Boards {
 
 	/** The qualification status opens in a pop-up on the page (a new tab without JavaScript). */
 	private static function status_dialog() {
-		echo '<dialog class="rsnc-ev-lb-dialog" id="rsnc-ev-lb-dialog"><form method="dialog"><button class="rsnc-ev-lb-close" aria-label="' . esc_attr__( 'Close', 'rsnc-events' ) . '">&times;</button></form><iframe title="' . esc_attr__( 'Qualification status', 'rsnc-events' ) . '" loading="lazy"></iframe></dialog>';
+		echo '<dialog class="rsnc-ev-lb-dialog" id="rsnc-ev-lb-dialog" data-rest="' . esc_url( rest_url( 'rsnc-events/v1/status' ) ) . '"><form method="dialog"><button class="rsnc-ev-lb-close" aria-label="' . esc_attr__( 'Close', 'rsnc-events' ) . '">&times;</button></form><div class="rsnc-ev-lb-status-body" aria-live="polite"></div></dialog>';
+	}
+
+	/** GET /wp-json/rsnc-events/v1/status?src=qualification.php?... : a rider's status as data. */
+	public static function rest() {
+		register_rest_route(
+			'rsnc-events/v1',
+			'/status',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'callback'            => array( __CLASS__, 'status' ),
+			)
+		);
+	}
+
+	public static function status( $request ) {
+		$src = (string) $request->get_param( 'src' );
+		// Only the admin's own status pages, with their usual query.
+		if ( ! preg_match( '~^(qualification(?:_state)?\.php)\?([A-Za-z0-9_=&%.+-]{1,300})$~', $src, $m ) ) {
+			return new WP_Error( 'rsnc_bad', 'Not found', array( 'status' => 404 ) );
+		}
+		parse_str( $m[2], $q );
+		$html = self::fetch( '/ratingslist/' . $m[1], array_map( 'strval', $q ) );
+		if ( null === $html ) {
+			return new WP_Error( 'rsnc_down', 'Unavailable', array( 'status' => 503 ) );
+		}
+		$name  = preg_match( '~<h2[^>]*>(.*?)</h2>~is', $html, $h ) ? self::text( $h[1] ) : '';
+		$items = array();
+		if ( preg_match_all( '~<strong>(.*?)</strong>.*?<span[^>]*>(.*?)</span>~is', $html, $all, PREG_SET_ORDER ) ) {
+			foreach ( $all as $it ) {
+				$value   = self::text( $it[2] );
+				$items[] = array(
+					'label'     => ltrim( self::text( $it[1] ), '# ' ),
+					'value'     => '' === $value ? '0' : $value,
+					'qualified' => 0 === strcasecmp( $value, 'Qualified' ),
+				);
+			}
+		}
+		return rest_ensure_response( array( 'name' => $name, 'items' => $items ) );
 	}
 
 	/** Hall of Fame and Challenge of the Champions: no picker, ranked earnings lists. */
