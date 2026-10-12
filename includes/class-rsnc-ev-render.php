@@ -682,8 +682,24 @@ class RSNC_EV_Render {
 		return self::in_category( $event, 'featured-event' );
 	}
 
-	/** Card picture: the website event's featured image (what the site has always shown), else an image flyer or a PDF flyer's preview. */
+	/** Card picture: the flyer uploaded in the RSNC admin (an image, or a PDF's preview), else the website event's featured image. */
 	private static function picture( array $event ) {
+		$flyers = isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array();
+		// Picture files first, then a PDF's preview.
+		usort(
+			$flyers,
+			static function ( $a, $b ) {
+				$pa = 'pdf' === ( $a['type'] ?? '' ) || preg_match( '/\.pdf(\?|$)/i', (string) ( $a['url'] ?? '' ) );
+				$pb = 'pdf' === ( $b['type'] ?? '' ) || preg_match( '/\.pdf(\?|$)/i', (string) ( $b['url'] ?? '' ) );
+				return (int) $pa <=> (int) $pb;
+			}
+		);
+		foreach ( $flyers as $flyer ) {
+			$pic = self::flyer_picture( $flyer );
+			if ( '' !== $pic ) {
+				return $pic;
+			}
+		}
 		$post = self::site_post( $event );
 		if ( $post && has_post_thumbnail( $post ) ) {
 			foreach ( array( 'large', 'full' ) as $size ) {
@@ -691,12 +707,6 @@ class RSNC_EV_Render {
 				if ( '' !== $url ) {
 					return $url;
 				}
-			}
-		}
-		foreach ( ( isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array() ) as $flyer ) {
-			$pic = self::flyer_picture( $flyer );
-			if ( '' !== $pic ) {
-				return $pic;
 			}
 		}
 		return '';
