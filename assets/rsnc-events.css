@@ -321,3 +321,6 @@
 .rsnc-ev-gallery:has(.rsnc-ev-thumbs) .rsnc-ev-count { display: none; }
 .rsnc-ev-gallery:has(.rsnc-ev-thumbs) .rsnc-ev-arrow { top: calc(50% - 65px); }
 .rsnc-ev .rsnc-ev-lb-qual { background: #e6f4ea; color: #1e6b34; }
+/* Points / Earnings / Shows header lines up with its numbers (right). */
+.rsnc-ev .rsnc-ev-lb-table th.rsnc-ev-lb-pts { text-align: right; }
+.rsnc-ev .rsnc-ev-lb-table th.rsnc-ev-lb-st, .rsnc-ev .rsnc-ev-lb-table td.rsnc-ev-lb-st { padding-left: 18px; }
