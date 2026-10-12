@@ -750,7 +750,8 @@ class RSNC_EV_Render {
 	/** [rsnc_featured number="3"]: Featured Events cards (small flyer left, date, name, city). */
 	public static function featured( $atts ) {
 		self::enqueue();
-		$atts   = shortcode_atts( array( 'number' => 3 ), $atts, 'rsnc_featured' );
+		$atts   = shortcode_atts( array( 'number' => 3, 'flyers' => 'no' ), $atts, 'rsnc_featured' );
+		$show_flyers = 'yes' === strtolower( (string) $atts['flyers'] );
 		$events = RSNC_EV_Feed::events();
 		if ( null === $events ) {
 			return '';
@@ -763,7 +764,7 @@ class RSNC_EV_Render {
 		echo '<div class="rsnc-ev rsnc-ev-featured">';
 		foreach ( $list as $event ) {
 			$link = self::event_link( $event );
-			$pic  = self::picture( $event );
+			$pic  = $show_flyers ? self::picture( $event ) : '';
 			$name = self::display_name( $event );
 			echo '<article class="rsnc-ev-feat-card' . ( '' === $pic ? ' rsnc-ev-feat-card--noimg' : '' ) . '">';
 			if ( '' !== $pic ) {
