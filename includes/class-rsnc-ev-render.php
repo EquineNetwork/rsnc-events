@@ -343,7 +343,8 @@ class RSNC_EV_Render {
 		$flyers    = isset( $event['flyers'] ) && is_array( $event['flyers'] ) ? $event['flyers'] : array();
 		$name_id   = 'rsnc-ev-name-' . (int) $event['eventUID'];
 
-		echo '<article class="rsnc-ev-card' . ( $cancelled ? ' rsnc-ev-is-cancelled' : '' ) . ( $flyers ? ' rsnc-ev-has-flyers' : '' ) . '" aria-labelledby="' . esc_attr( $name_id ) . '">';
+		// Every card has a flyer column: the flyer, or "Flyer coming soon".
+		echo '<article class="rsnc-ev-card rsnc-ev-has-flyers' . ( $cancelled ? ' rsnc-ev-is-cancelled' : '' ) . '" aria-labelledby="' . esc_attr( $name_id ) . '">';
 		self::date_block( $event['startDate'] );
 		echo '<div class="rsnc-ev-body">';
 		echo '<p class="rsnc-ev-when">' . esc_html( self::date_range( $event['startDate'], $event['endDate'] ) );
@@ -371,9 +372,7 @@ class RSNC_EV_Render {
 			echo '</span></p>';
 		}
 		echo '</div>';
-		if ( $flyers ) {
-			self::gallery( $flyers, $event['eventName'] );
-		}
+		self::gallery( $flyers, $event['eventName'] );
 		echo '</article>';
 	}
 
@@ -388,8 +387,73 @@ class RSNC_EV_Render {
 		}
 	}
 
+	/**
+	 * The picture to show for a flyer: an image flyer is its own picture; a PDF
+	 * uploaded to this site uses the preview image WordPress made for it (the
+	 * attachment's image, else the "-pdf.jpg" file beside it in uploads or beside
+	 * the PDF itself, e.g. on S3). '' when
+	 * there is no picture. Looked up once a day per URL.
+	 */
+	private static function flyer_picture( array $flyer ) {
+		$url = isset( $flyer['url'] ) ? (string) $flyer['url'] : '';
+		if ( '' === $url ) {
+			return '';
+		}
+		if ( 'pdf' !== ( $flyer['type'] ?? '' ) && ! preg_match( '/\.pdf(\?|$)/i', $url ) ) {
+			return $url;
+		}
+		$key    = 'rsnc_ev_pdfimg_' . md5( $url );
+		$cached = get_transient( $key );
+		if ( false !== $cached ) {
+			return (string) $cached;
+		}
+		$picture = '';
+		$id      = attachment_url_to_postid( $url );
+		if ( $id ) {
+			$picture = (string) wp_get_attachment_image_url( $id, 'large' );
+		}
+		if ( '' === $picture ) {
+			$uploads = wp_get_upload_dir();
+			$base    = (string) $uploads['baseurl'];
+			$path    = (string) wp_parse_url( $url, PHP_URL_PATH );
+			$marker  = (string) wp_parse_url( $base, PHP_URL_PATH ) . '/';
+			$at      = '' !== $path ? strpos( $path, $marker ) : false;
+			if ( false !== $at ) {
+				$rel = preg_replace( '/\.pdf$/i', '-pdf.jpg', substr( $path, $at + strlen( $marker ) ) );
+				if ( is_string( $rel ) && file_exists( trailingslashit( $uploads['basedir'] ) . $rel ) ) {
+					$picture = trailingslashit( $base ) . $rel;
+				}
+			}
+		}
+		if ( '' === $picture ) {
+			// Media offloaded to S3 (rsnc.us): the preview sits beside the PDF.
+			$guess = preg_replace( '/\.pdf(\?.*)?$/i', '-pdf.jpg', $url );
+			if ( is_string( $guess ) && $guess !== $url ) {
+				$head = wp_safe_remote_head( $guess, array( 'timeout' => 4, 'redirection' => 2 ) );
+				if ( ! is_wp_error( $head ) && 200 === (int) wp_remote_retrieve_response_code( $head )
+					&& 0 === strpos( (string) wp_remote_retrieve_header( $head, 'content-type' ), 'image/' ) ) {
+					$picture = $guess;
+				}
+			}
+		}
+		set_transient( $key, $picture, DAY_IN_SECONDS );
+		return $picture;
+	}
+
 	/** Flyers as a swipeable strip (native touch scrolling), with arrows when there are several. */
 	private static function gallery( array $flyers, $event_name ) {
+		$flyers = array_values(
+			array_filter(
+				$flyers,
+				static function ( $f ) {
+					return is_array( $f ) && ! empty( $f['url'] );
+				}
+			)
+		);
+		if ( ! $flyers ) {
+			echo '<div class="rsnc-ev-gallery rsnc-ev-gallery-empty"><div class="rsnc-ev-slide"><p class="rsnc-ev-soon">' . esc_html__( 'Flyer coming soon', 'rsnc-events' ) . '</p></div></div>';
+			return;
+		}
 		$count = count( $flyers );
 		echo '<div class="rsnc-ev-gallery" data-rsnc-ev-gallery role="region" aria-roledescription="carousel" aria-label="' . esc_attr( sprintf( /* translators: %s: event name */ __( 'Flyers for %s', 'rsnc-events' ), $event_name ) ) . '">';
 		echo '<div class="rsnc-ev-track" tabindex="0">';
@@ -401,16 +465,14 @@ class RSNC_EV_Render {
 			/* translators: 1: flyer number, 2: number of flyers */
 			$label = sprintf( __( 'Flyer %1$d of %2$d', 'rsnc-events' ), $i + 1, $count );
 			echo '<div class="rsnc-ev-slide" aria-label="' . esc_attr( $label ) . '">';
-			if ( 'pdf' === ( $flyer['type'] ?? '' ) ) {
-				echo '<a class="rsnc-ev-pdf" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">';
-				echo '<span class="rsnc-ev-pdf-icon" aria-hidden="true">PDF</span>';
-				echo '<span class="rsnc-ev-pdf-text">' . esc_html__( 'View flyer', 'rsnc-events' ) . '</span>';
-				if ( ! empty( $flyer['name'] ) ) {
-					echo '<span class="rsnc-ev-pdf-name">' . esc_html( $flyer['name'] ) . '</span>';
-				}
-				echo '</a>';
+			$picture = self::flyer_picture( $flyer );
+			if ( '' !== $picture ) {
+				// The picture opens the flyer itself (the PDF, for a PDF flyer).
+				echo '<a class="rsnc-ev-img" href="' . esc_url( $url ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $picture ) . '" alt="' . esc_attr( $label . ' — ' . $event_name ) . '" loading="lazy" decoding="async"></a>';
 			} else {
-				echo '<a class="rsnc-ev-img" href="' . esc_url( $url ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $url ) . '" alt="' . esc_attr( $label . ' — ' . $event_name ) . '" loading="lazy" decoding="async"></a>';
+				// A flyer with no picture yet: say so, and still let people open it.
+				echo '<div class="rsnc-ev-soon-wrap"><p class="rsnc-ev-soon">' . esc_html__( 'Flyer coming soon', 'rsnc-events' ) . '</p>';
+				echo '<a class="rsnc-ev-soon-link" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html__( 'Open current flyer', 'rsnc-events' ) . '</a></div>';
 			}
 			echo '</div>';
 		}

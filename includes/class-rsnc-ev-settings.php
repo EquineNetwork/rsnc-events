@@ -14,7 +14,7 @@ class RSNC_EV_Settings {
 
 	public static function defaults() {
 		return array(
-			'feed_url'      => 'https://endev.rsnc.us/api/events.php',
+			'feed_url'      => 'https://legacy.rsnc.us/api/events.php',
 			'cache_minutes' => 15,
 			'consumer'      => '',
 		);
@@ -107,7 +107,7 @@ class RSNC_EV_Settings {
 						<th scope="row"><label for="rsnc_ev_feed_url"><?php esc_html_e( 'Feed address', 'rsnc-events' ); ?></label></th>
 						<td>
 							<input type="url" class="regular-text code" id="rsnc_ev_feed_url" name="<?php echo esc_attr( self::OPTION ); ?>[feed_url]" value="<?php echo esc_attr( self::get( 'feed_url' ) ); ?>" required>
-							<p class="description"><?php esc_html_e( 'Testing: https://endev.rsnc.us/api/events.php — switch to the live admin address once Craig has deployed the feed.', 'rsnc-events' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Live: https://legacy.rsnc.us/api/events.php (moving to https://admin.rsnc.us/api/events.php — change it here when it does).', 'rsnc-events' ); ?></p>
 						</td>
 					</tr>
 					<tr>

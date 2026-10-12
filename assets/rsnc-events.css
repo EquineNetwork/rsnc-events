@@ -103,6 +103,11 @@
 .rsnc-ev-pdf-text { font-size: 20px; letter-spacing: .1em; }
 .rsnc-ev-pdf-name { font-size: 13px; color: var(--rsnc-ev-muted); overflow-wrap: anywhere; }
 .rsnc-ev a.rsnc-ev-pdf:hover .rsnc-ev-pdf-text { color: var(--rsnc-ev-accent); }
+/* No flyer picture yet */
+.rsnc-ev-soon-wrap { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.rsnc-ev .rsnc-ev-soon { margin: 0; font-size: 18px; letter-spacing: .1em; text-transform: uppercase; color: var(--rsnc-ev-muted); }
+.rsnc-ev a.rsnc-ev-soon-link { font-size: 13px; color: var(--rsnc-ev-muted); text-decoration: underline; }
+.rsnc-ev a.rsnc-ev-soon-link:hover { color: var(--rsnc-ev-accent); }
 .rsnc-ev .rsnc-ev-arrow {
 	display: none; position: absolute; top: calc(50% - 22px); width: 44px; height: 44px; padding: 0; margin: 0;
 	align-items: center; justify-content: center; background: rgba(255, 255, 255, .94); color: var(--rsnc-ev-ink);
