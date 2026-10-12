@@ -324,3 +324,8 @@
 /* Points / Earnings / Shows header lines up with its numbers (right). */
 .rsnc-ev .rsnc-ev-lb-table th.rsnc-ev-lb-pts { text-align: right; }
 .rsnc-ev .rsnc-ev-lb-table th.rsnc-ev-lb-st, .rsnc-ev .rsnc-ev-lb-table td.rsnc-ev-lb-st { padding-left: 18px; }
+
+/* Featured cards without flyers: date, name, city with a red edge; never wider than the section. */
+.rsnc-ev.rsnc-ev-featured { width: 100%; max-width: 100%; }
+.rsnc-ev-featured > .rsnc-ev-feat-card { min-width: 0; }
+.rsnc-ev-feat-card--noimg { border-left: 4px solid var(--rsnc-ev-accent); padding: 18px 20px; align-self: stretch; }

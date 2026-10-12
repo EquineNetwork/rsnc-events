@@ -102,7 +102,7 @@ class RSNC_EV_Settings {
 				$codes = array(
 					'[rsnc_calendar]'                             => __( 'Event Schedule: upcoming events by month with search and filters, flyers (first one big, thumbnails of the rest).', 'rsnc-events' ),
 					'[rsnc_results]'                              => __( 'Event Results: past events and their published results.', 'rsnc-events' ),
-					'[rsnc_featured number="3"]'                  => __( 'Home page Featured Events: cards with a small flyer (events in the Featured Event category).', 'rsnc-events' ),
+					'[rsnc_featured number="3"]'                  => __( 'Home page Featured Events: date, name and city cards (events in the Featured Event category). Add flyers="yes" to show a small flyer.', 'rsnc-events' ),
 					'[rsnc_upcoming limit="5"]'                   => __( 'Home page Upcoming Events: the next events as compact rows, no flyers.', 'rsnc-events' ),
 					'[rsnc_reservations]'                         => __( 'Event Reservations: RSNC Production Events; Reserve Now on events with a reservation attached. Optional category="slug".', 'rsnc-events' ),
 					'[rsnc_awarded]'                              => __( 'Total paid out this season, e.g. $1,699,394 (for the header counter). [rsnc_awarded dollar="no"] leaves off the $.', 'rsnc-events' ),
