@@ -36,6 +36,7 @@ class RSNC_EV_Boards {
 	public static function init() {
 		add_shortcode( 'rsnc_leaderboard', array( __CLASS__, 'shortcode' ) );
 		add_shortcode( 'rsnc_awarded', array( __CLASS__, 'awarded' ) );
+		add_shortcode( 'rsnc_join', array( __CLASS__, 'join' ) );
 		add_action( 'rest_api_init', array( __CLASS__, 'rest' ) );
 	}
 
@@ -421,5 +422,21 @@ class RSNC_EV_Boards {
 			return '';
 		}
 		return ( 'no' === strtolower( (string) $atts['dollar'] ) ? '' : '$' ) . number_format( round( (float) $total ) );
+	}
+
+	/**
+	 * [rsnc_join]: the RSNC membership join form (it runs on the member portal, members.rsnc.us,
+	 * where payments and the office's Pending members list are). Shown in a frame that grows to
+	 * fit; Continue to payment opens Authorize.Net's page full-window.
+	 */
+	public static function join( $atts ) {
+		$atts = shortcode_atts( array( 'src' => 'https://members.rsnc.us/join.php' ), $atts, 'rsnc_join' );
+		$src  = add_query_arg( 'embed', '1', esc_url_raw( (string) $atts['src'] ) );
+		$id   = 'rsnc-join-' . wp_rand( 1000, 9999 );
+		$out  = '<div class="rsnc-ev rsnc-ev-join"><iframe id="' . esc_attr( $id ) . '" src="' . esc_url( $src ) . '" title="' . esc_attr__( 'Join RSNC', 'rsnc-events' ) . '" style="width:100%;min-height:900px;border:0;display:block" loading="lazy"></iframe></div>';
+		$out .= '<script>(function(){var f=document.getElementById(' . wp_json_encode( $id ) . ');window.addEventListener("message",function(e){'
+			. 'if(!/^https:\\/\\/([a-z0-9-]+\\.)*rsnc\\.us$/.test(e.origin)||!e.data||!e.data.rsncJoinHeight){return;}'
+			. 'if(e.source===f.contentWindow){f.style.height=(e.data.rsncJoinHeight+20)+"px";f.style.minHeight="0";}});})();</script>';
+		return $out;
 	}
 }
