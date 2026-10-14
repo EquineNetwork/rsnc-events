@@ -17,6 +17,8 @@ class RSNC_EV_Updater {
 	public static function init() {
 		add_filter( 'pre_set_site_transient_update_plugins', array( __CLASS__, 'check' ) );
 		add_filter( 'plugins_api', array( __CLASS__, 'details' ), 10, 3 );
+		// New releases install on their own (WordPress's background updates), no Update click needed.
+		add_filter( 'auto_update_plugin', array( __CLASS__, 'auto_update' ), 10, 2 );
 		add_action( 'upgrader_process_complete', array( __CLASS__, 'forget' ), 10, 0 );
 	}
 
@@ -62,6 +64,14 @@ class RSNC_EV_Updater {
 		// Remember a failure briefly too, so a GitHub outage doesn't slow every admin page.
 		set_site_transient( self::TRANSIENT, $release, $release ? 6 * HOUR_IN_SECONDS : 30 * MINUTE_IN_SECONDS );
 		return $release;
+	}
+
+	/** Turns on WordPress auto-updates for this plugin only. */
+	public static function auto_update( $update, $item ) {
+		if ( is_object( $item ) && isset( $item->plugin ) && $item->plugin === self::basename() ) {
+			return true;
+		}
+		return $update;
 	}
 
 	/** Adds this plugin to WordPress's list of available updates (or of plugins that are up to date). */
