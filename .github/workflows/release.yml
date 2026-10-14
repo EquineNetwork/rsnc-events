@@ -1,0 +1,24 @@
+# Publishing a version tag (vX.Y.Z) builds dist/rsnc-events.zip and attaches it to a GitHub
+# release of that tag; installed sites pick it up through includes/class-rsnc-ev-updater.php.
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the tag matches the plugin version
+        run: |
+          v=$(sed -n "s/^define( 'RSNC_EV_VERSION', '\(.*\)' );/\1/p" rsnc-events.php)
+          test "v$v" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME but plugin version $v"; exit 1; }
+      - run: ./build.sh
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=$(awk -v v="= ${GITHUB_REF_NAME#v} =" '$0==v{f=1;next} /^= /{f=0} f' readme.txt)
+          gh release create "$GITHUB_REF_NAME" dist/rsnc-events.zip --title "$GITHUB_REF_NAME" --notes "${notes:-Release $GITHUB_REF_NAME}"

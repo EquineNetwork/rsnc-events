@@ -280,6 +280,7 @@
 /* ---- Leaderboards: [rsnc_leaderboard] ---- */
 .rsnc-ev-lb-pick { display: flex; gap: 10px; align-items: center; max-width: 360px; margin: 0 0 18px; }
 .rsnc-ev-lb-pick .rsnc-ev-field { flex: 1; }
+.rsnc-ev .rsnc-ev-lb-season { margin: 0 0 12px; font-size: 15px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--rsnc-ev-accent); }
 .rsnc-ev .rsnc-ev-lb-title { margin: 8px 0 4px; font-family: inherit; font-size: 22px; font-weight: 800 !important; letter-spacing: .1em; text-transform: uppercase; color: var(--rsnc-ev-navy); }
 .rsnc-ev .rsnc-ev-lb-note { margin: 0 0 18px; font-size: 13px; color: var(--rsnc-ev-muted); }
 .rsnc-ev-lb-section { margin: 0 0 26px; }

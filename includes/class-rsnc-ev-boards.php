@@ -201,6 +201,10 @@ class RSNC_EV_Boards {
 		}
 		ob_start();
 		echo '<div class="rsnc-ev rsnc-ev-lb rsnc-ev-lb-' . esc_attr( $type ) . '" id="rsnc-ev-lb">';
+		$season = $options ? self::season( $cfg, '' !== $chosen ? $chosen : (string) array_key_first( $options ) ) : '';
+		if ( '' !== $season ) {
+			echo '<p class="rsnc-ev-lb-season">' . esc_html( $season ) . '</p>';
+		}
 		echo '<form class="rsnc-ev-lb-pick" method="get" action="#rsnc-ev-lb">';
 		echo '<label class="rsnc-ev-sr" for="rsnc-ev-lb-select">' . esc_html( $cfg['label'] ) . '</label>';
 		echo '<div class="rsnc-ev-field"><select id="rsnc-ev-lb-select" name="' . esc_attr( $param ) . '" data-rsnc-ev-auto>';
@@ -247,6 +251,19 @@ class RSNC_EV_Boards {
 		}
 		echo '</div>';
 		return ob_get_clean();
+	}
+
+	/**
+	 * The season the admin's list is for ("2026-27 National Saddle Points Race"), from its
+	 * <h2 class="rsnc-season">; empty when the list doesn't say. Any state's list will do
+	 * (same cached copy the board uses), so it shows before a state is picked too.
+	 */
+	private static function season( array $cfg, $value ) {
+		$html = self::fetch( $cfg['list'], array( $cfg['field'] => $value ) );
+		if ( null === $html || ! preg_match( '~<h2[^>]*class="rsnc-season"[^>]*>(.*?)</h2>~is', $html, $m ) ) {
+			return '';
+		}
+		return self::text( $m[1] );
 	}
 
 	/** One division table. Columns come from the admin's own header row. */
