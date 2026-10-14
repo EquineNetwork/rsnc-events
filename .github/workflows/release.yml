@@ -1,7 +1,10 @@
-# Publishing a version tag (vX.Y.Z) builds dist/rsnc-events.zip and attaches it to a GitHub
-# release of that tag; installed sites pick it up through includes/class-rsnc-ev-updater.php.
+# Publishes the plugin: builds dist/rsnc-events.zip and attaches it to a GitHub release tagged
+# v<RSNC_EV_VERSION> (the tag is created at this commit). Installed sites pick it up through
+# includes/class-rsnc-ev-updater.php. Run it from the Actions tab (Run workflow) after bumping
+# the version, or push a matching vX.Y.Z tag.
 name: Release
 on:
+  workflow_dispatch:
   push:
     tags: ['v*']
 permissions:
@@ -11,14 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check the tag matches the plugin version
+      - name: Work out the tag from the plugin version
+        id: v
         run: |
           v=$(sed -n "s/^define( 'RSNC_EV_VERSION', '\(.*\)' );/\1/p" rsnc-events.php)
-          test "v$v" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME but plugin version $v"; exit 1; }
+          test -n "$v" || { echo "No RSNC_EV_VERSION in rsnc-events.php"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "v$v" != "$GITHUB_REF_NAME" ]; then echo "Tag $GITHUB_REF_NAME but plugin version $v"; exit 1; fi
+          echo "tag=v$v" >> "$GITHUB_OUTPUT"
+          echo "ver=$v" >> "$GITHUB_OUTPUT"
       - run: ./build.sh
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          VER: ${{ steps.v.outputs.ver }}
         run: |
-          notes=$(awk -v v="= ${GITHUB_REF_NAME#v} =" '$0==v{f=1;next} /^= /{f=0} f' readme.txt)
-          gh release create "$GITHUB_REF_NAME" dist/rsnc-events.zip --title "$GITHUB_REF_NAME" --notes "${notes:-Release $GITHUB_REF_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then echo "Release $TAG already exists; bump the version first."; exit 1; fi
+          notes=$(awk -v v="= $VER =" '$0==v{f=1;next} /^= /{f=0} f' readme.txt)
+          gh release create "$TAG" dist/rsnc-events.zip --target "$GITHUB_SHA" --title "$TAG" --notes "${notes:-Release $TAG}"
